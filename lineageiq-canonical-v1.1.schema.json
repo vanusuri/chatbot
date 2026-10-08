@@ -1,0 +1,1087 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.lineageiq.example/contracts/v1.1/lineageiq-canonical.schema.json",
+  "title": "LineageIQ Canonical Lineage Contract",
+  "description": "Technology-neutral deterministic parser output contract. Cross-reference validation requires semantic validation beyond JSON Schema. Version 1.1.0 adds optional global node identity and enterprise application mapping fields; identifiers must be validated for uniqueness and provenance by semantic validation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "model_version",
+    "extraction",
+    "source_artifacts",
+    "data_assets",
+    "data_elements",
+    "operations",
+    "transformations",
+    "lineage_edges",
+    "dq_rules",
+    "system_checks",
+    "control_flows",
+    "evidence",
+    "resolution_issues",
+    "extraction_metrics"
+  ],
+  "properties": {
+    "model_version": {
+      "const": "1.1.0"
+    },
+    "extraction": {
+      "$ref": "#/$defs/extraction"
+    },
+    "source_artifacts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/source_artifact"
+      }
+    },
+    "data_assets": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/data_asset"
+      }
+    },
+    "data_elements": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/data_element"
+      }
+    },
+    "operations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/operation"
+      }
+    },
+    "transformations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/transformation"
+      }
+    },
+    "lineage_edges": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/lineage_edge"
+      }
+    },
+    "dq_rules": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/dq_rule"
+      }
+    },
+    "system_checks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/system_check"
+      }
+    },
+    "control_flows": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/control_flow"
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/evidence"
+      }
+    },
+    "resolution_issues": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/resolution_issue"
+      }
+    },
+    "extraction_metrics": {
+      "$ref": "#/$defs/extraction_metrics"
+    }
+  },
+  "$defs": {
+    "confidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "score",
+        "level",
+        "method",
+        "verification_status",
+        "policy_version"
+      ],
+      "properties": {
+        "score": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "level": {
+          "type": "string",
+          "enum": [
+            "NOT_EVALUATED",
+            "LOW",
+            "MEDIUM",
+            "HIGH"
+          ]
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "PENDING_EVALUATION",
+            "RULE_BASED",
+            "CALIBRATED_MODEL",
+            "MANUAL"
+          ]
+        },
+        "verification_status": {
+          "type": "string",
+          "enum": [
+            "UNVERIFIED",
+            "VERIFIED",
+            "REJECTED",
+            "REVIEW_REQUIRED"
+          ]
+        },
+        "policy_version": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "extraction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "extraction_id",
+        "parser_id",
+        "parser_version",
+        "technology",
+        "status",
+        "source_artifact_ids"
+      ],
+      "properties": {
+        "extraction_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "parser_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "parser_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "technology": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "COMPLETE",
+            "PARTIAL",
+            "FAILED"
+          ]
+        },
+        "source_artifact_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "source_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "uri",
+        "language",
+        "revision",
+        "content_sha256"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "uri": {
+          "type": "string",
+          "minLength": 1
+        },
+        "language": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "content_sha256": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{64}$"
+        },
+        "node_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "description": "Globally unique stable lineage graph node identifier; null until identity resolution. Uniqueness across node collections is enforced by semantic validation."
+        }
+      }
+    },
+    "data_asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "platform",
+        "namespace",
+        "name",
+        "type"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "platform": {
+          "type": "string",
+          "minLength": 1
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "TABLE",
+            "VIEW",
+            "MATERIALIZED_VIEW",
+            "FILE",
+            "TOPIC",
+            "API",
+            "STREAM",
+            "DATASET",
+            "TEMP_TABLE",
+            "OTHER"
+          ]
+        },
+        "node_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "description": "Globally unique stable lineage graph node identifier; null until identity resolution. Uniqueness across node collections is enforced by semantic validation."
+        },
+        "apm_id": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "Asset Portfolio Management numeric identifier. Null when unknown; must not be inferred."
+        },
+        "bam_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "description": "Business Asset Management application identifier. Null when unknown; must not be inferred."
+        }
+      }
+    },
+    "data_element": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "asset_id",
+        "name",
+        "data_type"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "asset_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "data_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "node_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "description": "Globally unique stable lineage graph node identifier; null until identity resolution. Uniqueness across node collections is enforced by semantic validation."
+        },
+        "apm_id": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "Asset Portfolio Management numeric identifier. Null when unknown; must not be inferred."
+        },
+        "bam_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "description": "Business Asset Management application identifier. Null when unknown; must not be inferred."
+        }
+      }
+    },
+    "operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "input_asset_ids",
+        "output_asset_ids",
+        "execution_order",
+        "condition",
+        "evidence_ids"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "input_asset_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "output_asset_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "execution_order": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "condition": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "node_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "description": "Globally unique stable lineage graph node identifier; null until identity resolution. Uniqueness across node collections is enforced by semantic validation."
+        }
+      }
+    },
+    "transformation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "expression",
+        "normalized_expression",
+        "input_element_ids",
+        "output_element_id",
+        "dependency_type",
+        "resolution_status",
+        "evidence_ids"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "DIRECT",
+            "DERIVED",
+            "AGGREGATION",
+            "FILTER",
+            "JOIN",
+            "LOOKUP",
+            "CONSTANT",
+            "CAST",
+            "MASKING",
+            "HASHING",
+            "CONDITIONAL",
+            "WINDOW",
+            "UNION",
+            "UNKNOWN"
+          ]
+        },
+        "expression": {
+          "type": "string"
+        },
+        "normalized_expression": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "input_element_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "output_element_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "dependency_type": {
+          "type": "string",
+          "enum": [
+            "VALUE",
+            "FILTER",
+            "JOIN",
+            "GROUPING",
+            "CONTROL",
+            "ORDERING",
+            "UNKNOWN"
+          ]
+        },
+        "resolution_status": {
+          "type": "string",
+          "enum": [
+            "RESOLVED",
+            "PARTIAL",
+            "UNRESOLVED"
+          ]
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "node_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "description": "Globally unique stable lineage graph node identifier; null until identity resolution. Uniqueness across node collections is enforced by semantic validation."
+        }
+      }
+    },
+    "lineage_edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "level",
+        "source_id",
+        "target_id",
+        "operation_id",
+        "transformation_id",
+        "relationship",
+        "dependency_type",
+        "resolution_status",
+        "confidence",
+        "evidence_ids"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "level": {
+          "type": "string",
+          "enum": [
+            "ASSET",
+            "COLUMN"
+          ]
+        },
+        "source_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "transformation_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "relationship": {
+          "type": "string",
+          "enum": [
+            "DATA_FLOW",
+            "CONTROL_DEPENDENCY",
+            "READS_FROM",
+            "WRITES_TO"
+          ]
+        },
+        "dependency_type": {
+          "type": "string",
+          "enum": [
+            "VALUE",
+            "FILTER",
+            "JOIN",
+            "GROUPING",
+            "CONTROL",
+            "ORDERING",
+            "UNKNOWN"
+          ]
+        },
+        "resolution_status": {
+          "type": "string",
+          "enum": [
+            "RESOLVED",
+            "PARTIAL",
+            "UNRESOLVED"
+          ]
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidence"
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        }
+      },
+      "description": "Lineage assertions must have evidence. References and entity type alignment are checked semantically."
+    },
+    "dq_rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "scope",
+        "target_ids",
+        "dimension",
+        "rule_type",
+        "predicate",
+        "severity",
+        "execution_phase",
+        "evidence_ids"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "ASSET",
+            "ELEMENT",
+            "OPERATION"
+          ]
+        },
+        "target_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "dimension": {
+          "type": "string",
+          "enum": [
+            "COMPLETENESS",
+            "UNIQUENESS",
+            "VALIDITY",
+            "CONSISTENCY",
+            "ACCURACY",
+            "INTEGRITY",
+            "TIMELINESS",
+            "OTHER"
+          ]
+        },
+        "rule_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "predicate": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "INFO",
+            "WARNING",
+            "ERROR",
+            "CRITICAL"
+          ]
+        },
+        "execution_phase": {
+          "type": "string",
+          "enum": [
+            "PRE_LOAD",
+            "IN_PROCESS",
+            "POST_LOAD",
+            "UNKNOWN"
+          ]
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "node_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "description": "Globally unique stable lineage graph node identifier; null until identity resolution. Uniqueness across node collections is enforced by semantic validation."
+        }
+      }
+    },
+    "system_check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "scope",
+        "target_ids",
+        "check_type",
+        "predicate",
+        "action",
+        "severity",
+        "evidence_ids"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "ASSET",
+            "ELEMENT",
+            "OPERATION",
+            "SYSTEM"
+          ]
+        },
+        "target_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "check_type": {
+          "type": "string",
+          "enum": [
+            "RETURN_CODE",
+            "ROW_COUNT",
+            "FRESHNESS",
+            "RECONCILIATION",
+            "DEPENDENCY",
+            "FILE_ARRIVAL",
+            "SCHEMA_COMPATIBILITY",
+            "SLA",
+            "OTHER"
+          ]
+        },
+        "predicate": {
+          "type": "string"
+        },
+        "action": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "INFO",
+            "WARNING",
+            "ERROR",
+            "CRITICAL"
+          ]
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "node_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "description": "Globally unique stable lineage graph node identifier; null until identity resolution. Uniqueness across node collections is enforced by semantic validation."
+        }
+      }
+    },
+    "control_flow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "predecessor_operation_id",
+        "successor_operation_id",
+        "condition",
+        "action",
+        "evidence_ids"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "SEQUENTIAL",
+            "CONDITIONAL",
+            "LOOP",
+            "TRIGGER",
+            "DEPENDENCY",
+            "ABORT"
+          ]
+        },
+        "predecessor_operation_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "successor_operation_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "condition": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "action": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "artifact_id",
+        "start_line",
+        "end_line",
+        "extraction_method",
+        "parser_rule"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "artifact_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "start_line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "end_line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "extraction_method": {
+          "type": "string",
+          "enum": [
+            "AST",
+            "GRAMMAR",
+            "METADATA",
+            "CONFIGURATION",
+            "STATIC_ANALYSIS",
+            "MANUAL"
+          ]
+        },
+        "parser_rule": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "description": "end_line must be >= start_line; enforce semantically."
+    },
+    "resolution_issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "artifact_id",
+        "issue_type",
+        "symbol",
+        "reason",
+        "candidate_values",
+        "evidence_ids"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "artifact_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "issue_type": {
+          "type": "string",
+          "enum": [
+            "DYNAMIC_SQL",
+            "UNRESOLVED_SYMBOL",
+            "MISSING_METADATA",
+            "UNSUPPORTED_SYNTAX",
+            "AMBIGUOUS_REFERENCE",
+            "OTHER"
+          ]
+        },
+        "symbol": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "candidate_values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "extraction_metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "statements_discovered",
+        "statements_parsed",
+        "statements_unsupported",
+        "unresolved_reference_count",
+        "coverage_status"
+      ],
+      "properties": {
+        "statements_discovered": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "statements_parsed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "statements_unsupported": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unresolved_reference_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "coverage_status": {
+          "type": "string",
+          "enum": [
+            "COMPLETE",
+            "PARTIAL",
+            "UNKNOWN"
+          ]
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "extraction": {
+            "properties": {
+              "status": {
+                "const": "COMPLETE"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "extraction_metrics": {
+            "properties": {
+              "coverage_status": {
+                "const": "COMPLETE"
+              },
+              "statements_unsupported": {
+                "const": 0
+              },
+              "unresolved_reference_count": {
+                "const": 0
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}
