@@ -1,0 +1,34 @@
+
+lineageiq/
+  contracts/
+    v1/
+      lineageiq-canonical.schema.json
+      lineageiq-taxonomy.json
+      lineageiq-identity-rules.md
+      lineageiq-semantic-rules.md
+      lineageiq-confidence-policy.json
+
+  prompts/
+    deterministic-parser-system.md
+
+  parsers/
+    teradata/
+    abinitio/
+    informatica/
+    oracle/
+    sqlserver/
+    hive/
+    bigquery/
+    python/
+    java/
+    autosys/
+
+  tests/
+    golden-fixtures/
+    schema-validation/
+    semantic-validation/
+    regression/
+
+  adapters/
+    openlineage/
+    neo4j/
