@@ -1,0 +1,1463 @@
+# MASTER ENGINEERING PROMPT
+# LineageIQ — Enterprise Deterministic Parsing and Cross-Language Lineage Platform
+
+## 1. ROLE AND OBJECTIVE
+
+Act as a Principal Software Architect, Compiler Engineer, Python Engineering Lead, and Enterprise Data Lineage Specialist.
+
+Design and implement a complete, modular, production-oriented Python application named **LineageIQ Deterministic Parser Engine**.
+
+The platform must analyze enterprise application source-code repositories containing multiple programming languages, SQL files, configuration files, database access frameworks, and stored procedure references.
+
+Its primary objective is to discover, extract, correlate, validate, and publish **system-level, application-level, table-level, column-level, transformation-level, and data-quality lineage** using deterministic techniques.
+
+### Mandatory architectural constraints
+
+1. Python 3.12+ must be the primary implementation language.
+2. No LLM, generative AI, AI agent, prompt inference, or probabilistic code interpretation is permitted in the parsing and lineage extraction workflow.
+3. Use language-aware AST parsers, compiler APIs, semantic analysis, symbolic evaluation, deterministic rules, and metadata-assisted resolution.
+4. For C# and .NET, prefer Microsoft Roslyn via a separately deployable .NET parser adapter.
+5. For SQL Server, prefer Microsoft ScriptDom through a .NET adapter.
+6. For other SQL dialects, implement dedicated dialect-aware parsing adapters.
+7. Python must orchestrate repository discovery, parser dispatching, intermediate representation, dependency resolution, lineage construction, canonical normalization, evidence validation, and graph publishing.
+8. Never execute application source code to discover lineage.
+9. Never fabricate unresolved dependencies or database objects.
+10. Every published lineage relationship must contain traceable supporting evidence.
+11. Keep parsing, semantic resolution, lineage derivation, and graph persistence as independent architectural components.
+12. Support local execution, containerized execution, and eventual deployment to Google Cloud Platform.
+
+Generate actual executable source code, not just architectural explanations or pseudocode.
+
+---
+
+## 2. BUSINESS CONTEXT
+
+LineageIQ is an enterprise metadata intelligence and data lineage platform intended to analyze complex financial-services application ecosystems.
+
+Repositories may contain:
+
+- SQL Server and T-SQL
+- Oracle SQL and PL/SQL
+- Teradata SQL
+- Hive SQL
+- BigQuery SQL
+- PostgreSQL SQL
+- C# and .NET
+- Python
+- Java
+- JSON, XML, YAML, and configuration files
+- SQL embedded inside application code
+- Stored procedure references
+- Data access wrappers
+- Batch execution logic
+- Data quality validation logic
+
+### Initial pilot scope
+
+The first implementation must fully prioritize:
+
+1. SQL Server SQL files.
+2. C# and .NET application repositories.
+3. SQL embedded inside C#.
+4. SQL files loaded and executed by C# methods.
+5. SQL constructed across multiple C# methods.
+6. ADO.NET.
+7. Dapper.
+8. Stored procedure invocations.
+9. Cross-file dependencies.
+10. Cross-repository SQL references.
+11. Table-level and column-level lineage.
+12. Data quality checks.
+13. Neo4j graph publishing.
+
+Design the architecture to support additional languages without modifying the core lineage engine.
+
+---
+
+## 3. REQUIRED HIGH-LEVEL ARCHITECTURE
+
+Implement the following pipeline:
+
+```text
+Git Repository / Local Repository
+                |
+                v
+       Repository Discovery
+                |
+                v
+        Language Detection
+                |
+                v
+        Parser Dispatcher
+                |
+       +--------+--------+
+       |        |        |
+       v        v        v
+   SQL AST   C# AST   Config Parser
+       |        |        |
+       +--------+--------+
+                |
+                v
+    Shared Intermediate Model
+                |
+                v
+      Symbol Resolution Engine
+                |
+                v
+      Call Graph Construction
+                |
+                v
+      Symbolic Value Tracking
+                |
+                v
+     Cross-Language Resolution
+                |
+                v
+       SQL Execution Linking
+                |
+                v
+     Table / Column Lineage
+                |
+                v
+      Data Quality Extraction
+                |
+                v
+       Evidence Validation
+                |
+                v
+     LineageIQ Canonical Model
+                |
+                v
+      Graph Publication Layer
+                |
+       +--------+--------+
+       |        |        |
+       v        v        v
+     Neo4j   BigQuery   JSON
+```
+
+Each component must have an explicit Python interface, typed data contract, independent unit tests, and clear error handling.
+
+---
+
+# PART A — REPOSITORY DISCOVERY
+
+## 4. Repository Scanner
+
+Implement a repository scanner that accepts:
+
+- Local repository directory.
+- Git repository URL.
+- Git branch.
+- Git commit SHA.
+- Application identifier.
+- APM identifier.
+- BAM identifier.
+- Environment identifier.
+- Parser configuration.
+- Database metadata configuration.
+
+The scanner must recursively discover supported files.
+
+### File classifications
+
+| Extension | Classification |
+|---|---|
+| `.sql` | SQL |
+| `.cs` | C# |
+| `.vb` | VB.NET |
+| `.csproj` | .NET project |
+| `.sln` | .NET solution |
+| `.json` | Configuration |
+| `.xml` | XML |
+| `.config` | .NET configuration |
+| `.resx` | Resource definitions |
+| `.py` | Python |
+| `.java` | Java |
+| `.yaml` / `.yml` | Configuration |
+
+### Required features
+
+- File inventory.
+- File hashes.
+- Repository and commit identification.
+- Language detection.
+- Project dependency discovery.
+- Namespace and package identification.
+- Duplicate file handling.
+- File exclusion rules.
+- Git change detection.
+- Incremental scanning.
+- Repository-level metadata enrichment.
+
+Do not assume every file should be deeply parsed immediately.
+
+Implement an initial lightweight indexing phase followed by targeted semantic analysis.
+
+---
+
+# PART B — LANGUAGE-SPECIFIC PARSING
+
+## 5. SQL Parser Engine
+
+Implement a dialect-aware SQL parsing interface.
+
+Required interface:
+
+```python
+class SQLParser(Protocol):
+
+    def parse(
+        self,
+        sql_text: str,
+        dialect: str,
+        context: ParseContext
+    ) -> SQLParseResult:
+        ...
+```
+
+### SQL operations to support
+
+- SELECT
+- INSERT
+- INSERT INTO SELECT
+- UPDATE
+- DELETE
+- MERGE
+- CREATE TABLE AS SELECT
+- CREATE VIEW
+- ALTER VIEW
+- Stored procedures
+- EXEC / EXECUTE
+- Common table expressions
+- Nested queries
+- Subqueries
+- UNION / UNION ALL
+- JOIN
+- CASE
+- CAST
+- COALESCE
+- Aggregation
+- Window functions
+- Temporary tables
+- Table variables
+- Dynamic SQL
+
+### SQL extraction requirements
+
+Extract:
+
+1. Source tables.
+2. Target tables.
+3. Source columns.
+4. Target columns.
+5. Column transformations.
+6. Join conditions.
+7. Filtering predicates.
+8. Grouping expressions.
+9. Aggregation expressions.
+10. Stored procedure calls.
+11. Temporary table dependencies.
+12. Dynamic SQL fragments.
+13. Database and schema references.
+14. SQL statement type.
+15. SQL source location.
+
+### Example
+
+Input:
+
+```sql
+INSERT INTO RISK.CUSTOMER_RISK
+(
+    CUSTOMER_ID,
+    RISK_SCORE
+)
+SELECT
+    CUSTOMER_ID,
+    CASE
+        WHEN ANNUAL_INCOME < 50000
+        THEN 80
+        ELSE 30
+    END
+FROM CRM.CUSTOMER;
+```
+
+Expected extraction:
+
+```json
+{
+  "operation": "INSERT_SELECT",
+  "source_table": "CRM.CUSTOMER",
+  "target_table": "RISK.CUSTOMER_RISK",
+  "column_mappings": [
+    {
+      "source_columns": [
+        "CRM.CUSTOMER.CUSTOMER_ID"
+      ],
+      "target_column": "RISK.CUSTOMER_RISK.CUSTOMER_ID",
+      "transformation_type": "DIRECT"
+    },
+    {
+      "source_columns": [
+        "CRM.CUSTOMER.ANNUAL_INCOME"
+      ],
+      "target_column": "RISK.CUSTOMER_RISK.RISK_SCORE",
+      "transformation_type": "CASE",
+      "expression": "CASE WHEN ANNUAL_INCOME < 50000 THEN 80 ELSE 30 END"
+    }
+  ]
+}
+```
+
+Use AST-based extraction rather than regex for general SQL grammar.
+
+Implement schema-aware column resolution, alias handling, and `SELECT *` expansion when authoritative schema metadata is available.
+
+When schema metadata is unavailable, preserve unresolved references.
+
+---
+
+## 6. C# / .NET Parser Engine
+
+Implement a C# parsing adapter using Roslyn.
+
+A lightweight .NET worker may expose parsing capabilities to Python through a local process interface or gRPC.
+
+### Required C# analysis
+
+Extract:
+
+- Namespaces.
+- Classes.
+- Interfaces.
+- Methods.
+- Constructors.
+- Properties.
+- Fields.
+- Local variables.
+- Parameters.
+- Return values.
+- Method invocations.
+- Assignments.
+- String expressions.
+- File operations.
+- Database API calls.
+- Configuration references.
+- Exception handling.
+- Conditional branches.
+- Loops.
+- Dependency injection references.
+
+### Semantic analysis
+
+Use Roslyn semantic models to resolve:
+
+- Method symbols.
+- Overloaded methods.
+- Extension methods.
+- Variable symbols.
+- Parameter bindings.
+- Return value dependencies.
+- Type information.
+- Project references.
+- Cross-file method calls.
+
+Do not rely solely on method-name string matching.
+
+### Example
+
+```csharp
+public void LoadRisk()
+{
+    string sql =
+        File.ReadAllText("SQL/load_risk.sql");
+
+    ExecuteSql(sql);
+}
+```
+
+Expected output:
+
+```json
+{
+  "method": "LoadRisk",
+  "language": "CSHARP",
+  "sql_file_reference": "SQL/load_risk.sql",
+  "sql_variable": "sql",
+  "invocations": [
+    "File.ReadAllText",
+    "ExecuteSql"
+  ]
+}
+```
+
+---
+
+# PART C — CROSS-LANGUAGE RESOLUTION
+
+## 7. Shared Intermediate Representation
+
+Create a language-neutral intermediate representation.
+
+Required entities:
+
+- Repository
+- File
+- Project
+- Namespace
+- Class
+- Method
+- Parameter
+- Variable
+- Expression
+- Invocation
+- SQL statement
+- SQL file reference
+- Database connection
+- Database object
+- Data flow
+- Execution sink
+- Configuration reference
+- Evidence record
+
+Implement these using Pydantic models or typed Python dataclasses.
+
+Each record must contain:
+
+- Unique identifier.
+- Source repository.
+- Commit SHA.
+- File path.
+- Source line and column.
+- Parser identifier.
+- Parser version.
+- Extraction rule.
+- Resolution status.
+- Supporting evidence.
+
+---
+
+## 8. Cross-Method SQL Resolution
+
+Implement deterministic interprocedural data-flow analysis.
+
+### Example
+
+```csharp
+public void Process()
+{
+    string sql = BuildQuery();
+    ExecuteSql(sql);
+}
+
+private string BuildQuery()
+{
+    return "SELECT CUSTOMER_ID FROM CRM.CUSTOMER";
+}
+```
+
+Expected behavior:
+
+1. Parse both methods.
+2. Resolve the `BuildQuery()` invocation.
+3. Identify its returned SQL expression.
+4. Propagate the returned value to `Process.sql`.
+5. Identify `ExecuteSql(sql)`.
+6. Resolve the execution sink.
+7. Parse the SQL.
+8. Associate SQL execution with the calling method.
+9. Generate database lineage.
+
+### Required symbolic operations
+
+Support:
+
+- Constant propagation.
+- String concatenation.
+- String interpolation.
+- Method return propagation.
+- Parameter substitution.
+- Local variable assignments.
+- Conditional expression evaluation.
+- Configuration lookup.
+- SQL file content resolution.
+- Bounded interprocedural traversal.
+
+Implement reusable method summaries and cycle detection.
+
+Support configurable analysis limits to prevent uncontrolled recursion and exponential path growth.
+
+---
+
+## 9. SQL File-to-.NET Correlation
+
+### Example repository
+
+```text
+CustomerRisk/
+├── SQL/
+│   └── load_risk.sql
+├── Services/
+│   └── RiskService.cs
+└── Data/
+    └── DatabaseHelper.cs
+```
+
+`RiskService.cs`:
+
+```csharp
+string sql =
+    File.ReadAllText("SQL/load_risk.sql");
+
+DatabaseHelper.Execute(sql);
+```
+
+`DatabaseHelper.cs`:
+
+```csharp
+public static void Execute(string sql)
+{
+    using var command =
+        new SqlCommand(sql, connection);
+
+    command.ExecuteNonQuery();
+}
+```
+
+Expected lineage:
+
+```text
+RiskService
+     |
+     v
+DatabaseHelper.Execute
+     |
+     v
+SQL/load_risk.sql
+     |
+     v
+SQL Statement
+     |
+     v
+Source Table
+     |
+     v
+Target Table
+```
+
+The implementation must prove that SQL reaches a recognized execution sink.
+
+Merely reading or referencing a SQL file must not establish confirmed execution.
+
+---
+
+## 10. Database Execution Sink Registry
+
+Implement an extensible execution sink registry.
+
+Support:
+
+### ADO.NET
+
+- SqlCommand
+- DbCommand
+- ExecuteReader
+- ExecuteNonQuery
+- ExecuteScalar
+- Async equivalents
+- CommandText
+- CommandType.StoredProcedure
+
+### Dapper
+
+- Query
+- QueryAsync
+- Execute
+- ExecuteAsync
+- QueryFirst
+- QuerySingle
+
+### Entity Framework Core
+
+- FromSql
+- FromSqlRaw
+- ExecuteSqlRaw
+- LINQ query expressions
+- DbContext mappings
+- DbSet mappings
+
+### Custom frameworks
+
+Allow application-specific database wrappers to be registered through YAML configuration.
+
+Example:
+
+```yaml
+execution_sinks:
+  - framework: CUSTOM
+    method_symbol: Company.Data.DatabaseHelper.ExecuteSql
+    sql_parameter_index: 0
+    execution_type: SQL
+```
+
+For every sink, resolve the SQL expression, database connection, execution context, and caller where possible.
+
+---
+
+# PART D — DYNAMIC SQL
+
+## 11. Dynamic SQL Resolution Engine
+
+Implement deterministic symbolic evaluation.
+
+### Example
+
+```csharp
+string tableName = "CUSTOMER_" + region;
+
+string sql =
+    "SELECT * FROM CRM." + tableName;
+```
+
+If `region` is known to equal `US`, resolve:
+
+```sql
+SELECT * FROM CRM.CUSTOMER_US
+```
+
+If `region` is unknown, preserve:
+
+```json
+{
+  "sql_template": "SELECT * FROM CRM.CUSTOMER_{region}",
+  "resolution_status": "PARTIAL",
+  "unresolved_variables": [
+    "region"
+  ]
+}
+```
+
+### Resolution priority
+
+1. Compile-time constants.
+2. Local assignments.
+3. Method parameter propagation.
+4. Method return analysis.
+5. Configuration files.
+6. Environment-specific configuration.
+7. Database schema metadata.
+8. Approved runtime SQL evidence.
+
+Runtime evidence must be distinguished from static-analysis evidence.
+
+Never guess runtime-generated table names.
+
+---
+
+# PART E — STORED PROCEDURES AND CROSS-REPOSITORY RESOLUTION
+
+## 12. Stored Procedure Resolution
+
+Support SQL stored procedure invocations from .NET code.
+
+Example:
+
+```csharp
+command.CommandText = "dbo.sp_load_risk";
+command.CommandType = CommandType.StoredProcedure;
+command.ExecuteNonQuery();
+```
+
+Resolve the procedure against:
+
+- Database connection.
+- Server.
+- Database.
+- Schema.
+- Procedure name.
+- Environment.
+- Available source definitions.
+
+If the stored procedure is defined in another repository, link the invocation to the correct repository artifact.
+
+Implement a global asset registry with stable database object identities.
+
+Do not match procedures based only on name when multiple candidates exist.
+
+---
+
+## 13. Cross-Repository Resolution
+
+Implement a repository-independent asset registry.
+
+Example:
+
+```text
+Repository A
+  CustomerRiskApp
+      |
+      v
+  Calls sp_load_risk
+
+Repository B
+  RiskDatabase
+      |
+      v
+  Defines sp_load_risk
+      |
+      v
+  Reads CRM.CUSTOMER
+      |
+      v
+  Writes RISK.CUSTOMER_RISK
+```
+
+Required features:
+
+- Global object identifiers.
+- Application ownership mapping.
+- Database context resolution.
+- Cross-repository dependency discovery.
+- Version-aware matching.
+- Ambiguity detection.
+- Evidence-based linkage.
+
+---
+
+# PART F — LINEAGE GENERATION
+
+## 14. Lineage Types
+
+Generate:
+
+### System-level lineage
+
+```text
+Source Database
+      |
+      v
+.NET Application
+      |
+      v
+Target Database
+```
+
+### Application-level lineage
+
+```text
+CustomerService
+      |
+      v
+RiskService
+      |
+      v
+DatabaseExecutor
+```
+
+### Table-level lineage
+
+```text
+CRM.CUSTOMER
+      |
+      v
+RISK.CUSTOMER_RISK
+```
+
+### Column-level lineage
+
+```text
+CRM.CUSTOMER.ANNUAL_INCOME
+      |
+      v
+RISK.CUSTOMER_RISK.RISK_SCORE
+```
+
+### Transformation lineage
+
+Capture the exact transformation expression and its input dependencies.
+
+### Data quality lineage
+
+Capture validation rules, affected columns, and error destinations.
+
+Distinguish code execution relationships from physical data-flow relationships.
+
+---
+
+## 15. Lineage Relationship Types
+
+Implement at least:
+
+- CONTAINS
+- DEFINES
+- CALLS
+- READS_FILE
+- CONTAINS_SQL
+- EXECUTES_SQL
+- INVOKES_PROCEDURE
+- READS_FROM
+- WRITES_TO
+- DERIVES_FROM
+- TRANSFORMS
+- FILTERS
+- VALIDATES
+- USES_CONFIG
+- DEPENDS_ON
+
+Define source/target direction and permitted node types for every relationship.
+
+---
+
+# PART G — CANONICAL MODEL
+
+## 16. LineageIQ Canonical Contract
+
+Create a JSON Schema and corresponding Python models.
+
+Required identifiers:
+
+- `node_id`: Globally unique, stable node identifier.
+- `apm_id`: Asset Portfolio Management identifier.
+- `bam_id`: Business Asset Management application identifier.
+- `repository_id`.
+- `application_id`.
+- `asset_id`.
+- `lineage_record_id`.
+
+### Required lineage metadata
+
+```json
+{
+  "schema_version": "1.0",
+  "lineage_record_id": "lineage-001",
+  "source_node_id": "source-column-id",
+  "target_node_id": "target-column-id",
+  "relationship_type": "DERIVES_FROM",
+  "transformation_expression": "CASE ... END",
+  "extraction_method": "DETERMINISTIC",
+  "parser_id": "TSQL_SCRIPTDOM",
+  "resolution_status": "RESOLVED",
+  "confidence_score": 1.0,
+  "evidence_ids": [
+    "evidence-001"
+  ],
+  "repository_id": "customer-risk",
+  "commit_sha": "abc123",
+  "apm_id": 12345,
+  "bam_id": "APP001"
+}
+```
+
+The values above are examples.
+
+Implement canonical model validation before graph publication.
+
+Separate durable asset identity from version-specific lineage observations.
+
+---
+
+# PART H — CONFIDENCE AND EVIDENCE
+
+## 17. Confidence Scoring
+
+Implement deterministic confidence assessment based on evidence quality and resolution completeness.
+
+Do not use arbitrary or uncalibrated probability estimates.
+
+Required dimensions:
+
+1. Parser success.
+2. Symbol resolution completeness.
+3. SQL resolution completeness.
+4. Database object resolution.
+5. Column mapping completeness.
+6. Execution path evidence.
+7. Schema validation.
+8. Ambiguity.
+9. Unsupported constructs.
+
+### Resolution statuses
+
+- RESOLVED
+- PARTIAL
+- AMBIGUOUS
+- UNRESOLVED
+- UNSUPPORTED
+- ERROR
+
+Implement confidence as a configurable, documented scoring policy.
+
+If numerical confidence is not sufficiently justified, retain a qualitative evidence-strength level instead.
+
+Every score must be explainable through contributing evidence.
+
+---
+
+## 18. Evidence Provenance
+
+Each lineage relationship must reference supporting evidence.
+
+Required evidence fields:
+
+- Evidence ID.
+- Repository.
+- Commit SHA.
+- Source file.
+- Line and column.
+- Parser.
+- Parser version.
+- Rule ID.
+- AST reference.
+- SQL statement reference.
+- Method symbol.
+- Resolution trace.
+- Timestamp.
+
+Provide an API to explain why a lineage relationship exists.
+
+Example:
+
+```text
+Why does CRM.CUSTOMER.ANNUAL_INCOME
+feed RISK.CUSTOMER_RISK.RISK_SCORE?
+
+Evidence:
+1. RiskService.LoadRisk invoked.
+2. SQL/load_risk.sql loaded.
+3. SQL passed to DatabaseExecutor.
+4. SqlCommand executed.
+5. SQL AST identifies INSERT SELECT.
+6. CASE expression references ANNUAL_INCOME.
+7. Target column is RISK_SCORE.
+```
+
+---
+
+# PART I — DATA QUALITY
+
+## 19. DQ Extraction
+
+Implement deterministic DQ rule extraction.
+
+Support:
+
+- NOT NULL checks.
+- Range checks.
+- Referential integrity.
+- Duplicate detection.
+- Record-count reconciliation.
+- Source-target count comparisons.
+- Exception routing.
+- Business validation rules.
+- Element-level checks.
+- System-level checks.
+
+### Example
+
+```sql
+INSERT INTO DQ.CUSTOMER_ERRORS
+SELECT CUSTOMER_ID
+FROM CRM.CUSTOMER
+WHERE SSN IS NULL;
+```
+
+Identify a DQ rule only when configured DQ conventions or other supporting evidence justify that classification.
+
+Do not classify every WHERE predicate as a data quality rule.
+
+Represent DQ rules as first-class canonical graph assets.
+
+---
+
+# PART J — GRAPH STORAGE
+
+## 20. Neo4j Integration
+
+Implement a Neo4j publisher.
+
+Required capabilities:
+
+- Create nodes.
+- Create relationships.
+- Merge existing nodes.
+- Update attributes.
+- Maintain stable identities.
+- Preserve evidence.
+- Version lineage.
+- Delete or supersede stale observations.
+- Transactional publication.
+- Retry handling.
+- Idempotency.
+
+Use parameterized Cypher queries.
+
+Do not interpolate untrusted repository content directly into Cypher.
+
+### Required graph queries
+
+Implement APIs for:
+
+1. Upstream lineage.
+2. Downstream lineage.
+3. Column impact analysis.
+4. Table impact analysis.
+5. Application dependency analysis.
+6. SQL execution provenance.
+7. Stored procedure dependency tracing.
+8. Unresolved lineage discovery.
+9. DQ rule discovery.
+10. Evidence explanation.
+
+---
+
+# PART K — INCREMENTAL PROCESSING
+
+## 21. Incremental Parsing
+
+Implement Git-based change detection.
+
+Track dependencies between:
+
+- Files.
+- Classes.
+- Methods.
+- Variables.
+- SQL statements.
+- Database assets.
+- Configuration.
+- Schema metadata.
+- Parser versions.
+
+When a file changes:
+
+1. Reparse the changed artifact.
+2. Identify changed symbols.
+3. Invalidate affected method summaries.
+4. Recompute dependent SQL resolutions.
+5. Recompute impacted lineage.
+6. Validate graph changes.
+7. Publish the graph delta.
+
+Do not reprocess unrelated repositories or files unnecessarily.
+
+Support full rebuild and incremental modes.
+
+---
+
+# PART L — APPLICATION INTERFACES
+
+## 22. CLI
+
+Implement a command-line interface.
+
+Required commands:
+
+```bash
+lineageiq scan --repo ./CustomerRisk
+
+lineageiq parse --repo ./CustomerRisk
+
+lineageiq resolve --repo ./CustomerRisk
+
+lineageiq build-lineage --repo ./CustomerRisk
+
+lineageiq publish --target neo4j
+
+lineageiq validate --input lineage.json
+
+lineageiq explain --lineage-id lineage-001
+
+lineageiq export --format json
+
+lineageiq export --format graphviz
+```
+
+Provide useful exit codes and structured error reporting.
+
+---
+
+## 23. REST API
+
+Implement a FastAPI application.
+
+Required endpoints:
+
+```text
+POST /api/v1/repositories/scan
+
+POST /api/v1/parsers/execute
+
+POST /api/v1/lineage/resolve
+
+GET  /api/v1/lineage/upstream
+
+GET  /api/v1/lineage/downstream
+
+GET  /api/v1/lineage/impact
+
+GET  /api/v1/lineage/evidence/{id}
+
+GET  /api/v1/parsers/capabilities
+
+GET  /api/v1/jobs/{id}
+
+GET  /health
+```
+
+Include OpenAPI documentation, request validation, structured responses, and appropriate authentication/authorization boundaries.
+
+---
+
+# PART M — PYTHON PROJECT STRUCTURE
+
+## 24. Required Project Layout
+
+Generate the following modular structure:
+
+```text
+lineageiq/
+│
+├── pyproject.toml
+├── README.md
+├── Dockerfile
+├── docker-compose.yml
+├── .env.example
+│
+├── config/
+│   ├── parsers.yaml
+│   ├── execution_sinks.yaml
+│   └── lineage_rules.yaml
+│
+├── src/lineageiq/
+│   ├── cli.py
+│   ├── api/
+│   │   ├── main.py
+│   │   └── routes/
+│   ├── repository/
+│   │   ├── scanner.py
+│   │   ├── git_adapter.py
+│   │   └── dependency_index.py
+│   ├── parsers/
+│   │   ├── base.py
+│   │   ├── dispatcher.py
+│   │   ├── sql_parser.py
+│   │   ├── dotnet_parser.py
+│   │   └── config_parser.py
+│   ├── ir/
+│   │   ├── models.py
+│   │   └── serialization.py
+│   ├── resolution/
+│   │   ├── symbol_resolver.py
+│   │   ├── call_graph.py
+│   │   ├── symbolic_evaluator.py
+│   │   ├── method_summaries.py
+│   │   ├── sql_execution_resolver.py
+│   │   └── cross_repo_resolver.py
+│   ├── lineage/
+│   │   ├── table_lineage.py
+│   │   ├── column_lineage.py
+│   │   ├── transformation_lineage.py
+│   │   └── dq_lineage.py
+│   ├── canonical/
+│   │   ├── models.py
+│   │   ├── schema.json
+│   │   └── validator.py
+│   ├── evidence/
+│   │   ├── collector.py
+│   │   ├── confidence.py
+│   │   └── explain.py
+│   ├── graph/
+│   │   ├── neo4j_publisher.py
+│   │   ├── graph_queries.py
+│   │   └── exporters.py
+│   └── common/
+│       ├── logging.py
+│       ├── settings.py
+│       └── exceptions.py
+│
+├── dotnet-parser/
+│   ├── LineageIQ.Parser.csproj
+│   ├── Program.cs
+│   ├── RoslynAnalyzer.cs
+│   ├── SqlScriptDomAnalyzer.cs
+│   └── Contracts/
+│
+├── examples/
+│   ├── static_sql/
+│   ├── embedded_sql/
+│   ├── dynamic_sql/
+│   ├── cross_method/
+│   ├── stored_procedure/
+│   └── cross_repository/
+│
+└── tests/
+    ├── unit/
+    ├── integration/
+    ├── regression/
+    └── golden/
+```
+
+Use clean architecture and dependency inversion.
+
+Avoid monolithic parser implementations.
+
+---
+
+# PART N — TESTING
+
+## 25. Comprehensive Test Requirements
+
+Implement automated tests using pytest.
+
+### Required scenarios
+
+1. Static SELECT.
+2. INSERT SELECT.
+3. UPDATE.
+4. MERGE.
+5. JOIN.
+6. CTE.
+7. Nested SQL.
+8. CASE transformation.
+9. SQL embedded in C#.
+10. SQL loaded from file.
+11. SQL passed between methods.
+12. SQL returned by helper methods.
+13. Constant concatenation.
+14. Dynamic SQL with known values.
+15. Dynamic SQL with unknown values.
+16. Dapper execution.
+17. ADO.NET execution.
+18. Entity Framework mappings.
+19. Stored procedure invocation.
+20. Cross-repository stored procedure.
+21. Duplicate object names.
+22. Missing schema metadata.
+23. `SELECT *` expansion.
+24. Unsupported syntax.
+25. Recursive method calls.
+26. SQL string never executed.
+27. Configuration-driven table names.
+28. Data quality validation.
+29. Incremental Git changes.
+30. Neo4j idempotent publishing.
+
+Create golden expected-lineage JSON files.
+
+Measure precision, recall, coverage, and unresolved rates.
+
+Tests must validate both positive and negative lineage assertions.
+
+---
+
+# PART O — SECURITY AND OPERATIONS
+
+## 26. Security Requirements
+
+- Read-only repository access.
+- No execution of scanned source code.
+- Sandboxed parser processes.
+- Resource and timeout limits.
+- Secrets redaction.
+- No credentials in graph evidence.
+- Parameterized database operations.
+- Safe handling of untrusted repository paths.
+- Path traversal prevention.
+- Dependency vulnerability scanning.
+- Audit logging.
+- Configurable source-code retention.
+
+---
+
+## 27. Logging and Observability
+
+Implement structured logging.
+
+Track:
+
+- Repository scan duration.
+- Files discovered.
+- Files parsed.
+- Parser failures.
+- SQL statements discovered.
+- Execution sinks resolved.
+- Unresolved dynamic SQL.
+- Table lineage edges.
+- Column lineage edges.
+- Confidence distributions.
+- Cache hit rates.
+- Neo4j publication duration.
+
+Expose metrics suitable for Prometheus and Google Cloud Monitoring.
+
+---
+
+# PART P — DELIVERABLES AND EXECUTION INSTRUCTIONS
+
+## 28. Required Deliverables
+
+Generate all of the following:
+
+1. Complete Python source code.
+2. Roslyn/ScriptDom .NET parser adapter source code.
+3. Dependency and configuration files.
+4. LineageIQ canonical JSON Schema.
+5. Parser intermediate representation contracts.
+6. Execution sink registry.
+7. Deterministic resolution rules.
+8. Neo4j schema and Cypher queries.
+9. FastAPI endpoints.
+10. CLI implementation.
+11. Example SQL/.NET repositories.
+12. Automated unit tests.
+13. Integration tests.
+14. Golden lineage regression tests.
+15. Docker configuration.
+16. Local setup instructions.
+17. GCP deployment guidance.
+18. Architecture documentation.
+19. Known limitations.
+20. Future extension points.
+
+Provide a downloadable project structure suitable for GitHub.
+
+---
+
+## 29. Coding Standards
+
+Mandatory:
+
+- Python 3.12+.
+- Type hints.
+- Pydantic or typed dataclasses.
+- Modular architecture.
+- Dependency injection where appropriate.
+- Clear interfaces.
+- Structured exceptions.
+- Deterministic behavior.
+- Explicit error reporting.
+- Unit-testable components.
+- No hardcoded environment-specific credentials.
+- No hidden AI dependencies.
+- No fabricated lineage edges.
+- No silent parser failures.
+
+Prefer maintainable, understandable code over unnecessary abstraction.
+
+---
+
+## 30. Implementation Sequence
+
+Implement the solution in the following order.
+
+### Milestone 1 — Foundation
+
+- Project structure.
+- Configuration.
+- Canonical models.
+- Parser IR.
+- Repository scanner.
+- Parser dispatcher.
+
+### Milestone 2 — Language parsers
+
+- SQL Server AST adapter.
+- Roslyn C# parser adapter.
+- Configuration parser.
+- Parser capability registry.
+
+### Milestone 3 — Cross-language resolution
+
+- Symbol resolver.
+- Call graph.
+- Constant propagation.
+- Method summaries.
+- SQL file correlation.
+- Execution sink detection.
+
+### Milestone 4 — Lineage
+
+- Table lineage.
+- Column lineage.
+- Transformation lineage.
+- Stored procedure lineage.
+- DQ lineage.
+
+### Milestone 5 — Enterprise graph
+
+- Canonical validation.
+- Evidence and confidence.
+- Neo4j publication.
+- Upstream/downstream APIs.
+- Explainability.
+
+### Milestone 6 — Production hardening
+
+- Incremental analysis.
+- Security controls.
+- Performance tests.
+- Integration tests.
+- Container deployment.
+- Documentation.
+
+Complete and test each milestone before proceeding to the next.
+
+---
+
+## 31. Mandatory Acceptance Criteria
+
+The implementation is acceptable only when:
+
+1. It can scan a repository containing both SQL and .NET files.
+2. It can parse supported SQL using a real SQL AST parser.
+3. It can parse C# using Roslyn semantic analysis.
+4. It can identify SQL loaded from external files.
+5. It can identify SQL embedded in C#.
+6. It can follow supported SQL values across method calls.
+7. It can establish execution through recognized database APIs.
+8. It can produce table-level lineage.
+9. It can produce column-level lineage.
+10. It can preserve transformation expressions.
+11. It can link supported stored procedure calls.
+12. It can record unresolved dynamic SQL without guessing.
+13. It can create canonical lineage JSON.
+14. It can publish lineage to Neo4j.
+15. It can explain each published lineage relationship.
+16. It can run automated regression tests.
+17. It can process changes incrementally.
+18. It can operate without AI/LLM services.
+
+Any incomplete requirement must be explicitly documented as incomplete, with a failing or skipped acceptance test and a clear implementation plan.
+
+Do not substitute regex-based general parsing for the required AST and semantic analysis.
+
+---
+
+# FINAL INSTRUCTION TO THE CODING AGENT
+
+**Build the actual implementation.**
+
+Do not stop after producing architecture documentation.
+
+Start by creating the complete project structure and executable foundation.
+
+Then implement each milestone with working source code, tests, examples, and documentation.
+
+After each milestone:
+
+1. Display the files created.
+2. Explain the functionality implemented.
+3. Run automated tests.
+4. Report passing and failing tests.
+5. Identify unsupported scenarios.
+6. Fix defects before advancing.
+7. Update the implementation status and README.
+
+If execution tools are unavailable, clearly distinguish generated but untested code from tested code. Never claim a test passed without executing it.
+
+Maintain a requirements traceability matrix mapping every functional requirement to its source files, tests, and completion status.
+
+Avoid placeholder functions, simulated parser outputs, fake test results, and undocumented shortcuts.
+
+**Final objective:** Deliver a working, extensible, deterministic enterprise lineage engine capable of correlating SQL and .NET code across files, methods, and repositories and publishing evidence-backed lineage into the LineageIQ canonical graph model.
